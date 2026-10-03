@@ -10,7 +10,10 @@ The codebase is organized in a modular structure to keep the Key-Value core sepa
 - **`pkg/db/`**: Contains the B-Tree logic, data node models, and the core Disk mapping logic (including `mmap` chunks for copy-on-write functionality).
 - **`cmd/db-cli/`**: Contains the main entrypoint and standard CLI command execution logic to interface with the database engine.
 
-The disk format places a special **Master Page** containing a database signature, current root node pointer, and total allocated pages. When updates happen, nodes are safely appended to the file. Once `sync`ed to disk, the master page is updated to point to the new B-Tree root, ensuring atomic updates and crash recovery.
+The disk format places a special **Master Page** containing a database signature, current root node pointer, total allocated pages, and pointers to the FreeList. 
+
+## Storage & Free List
+When updates happen, nodes are safely appended to the file. Once `sync`ed to disk, the master page is updated to point to the new B-Tree root, ensuring atomic updates and crash recovery. Any nodes that become deleted/abandoned through B-Tree merges or replacements are deposited to the **Free List**, an internal linked list of pages. This allows the system to reuse space instead of infinitely expanding the file.
 
 ## Getting Started
 
